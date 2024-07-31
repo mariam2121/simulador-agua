@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botella y Vaso</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<body>
+    <script>
+        let bottle, cap, cup;
+        let drops = [];
+        let waterLevel = 0;
+        const maxWaterLevel = 150; // Altura máxima del vaso (ajústala según sea necesario)
+
+        function setup() {
+            createCanvas(400, 600);
+            // Inicializar objetos
+            bottle = new Bottle(width / 2, height / 4);
+            cap = new Cap(width / 2, height / 8);
+            cup = new Cup(width / 2, (3 * height) / 4, maxWaterLevel);
+            // Crear gotas de agua
+            for (let i = 0; i < 100; i++) {
+                drops.push(new Drop(random(width / 2 - 50, width / 2 + 50), random(-500, 0)));
+            }
+        }
+
+        function draw() {
+            background(220);
+            // Dibujar objetos
+            bottle.display();
+            cap.display();
+            cup.display();
+            // Dibujar y actualizar gotas de agua
+            for (let i = drops.length - 1; i >= 0; i--) {
+                drops[i].update();
+                drops[i].display();
+                // Verificar si la gota cae dentro del vaso
+                if (drops[i].y > cup.y - cup.h / 2 && drops[i].x > cup.x - cup.w / 2 && drops[i].x < cup.x + cup.w / 2) {
+                    drops.splice(i, 1); // Eliminar la gota
+                    waterLevel += 2; // Incrementa el nivel de agua (ajústalo según sea necesario)
+                    waterLevel = min(waterLevel, maxWaterLevel); // Limita el nivel de agua al máximo
+                }
+            }
+            // Dibujar el nivel de agua en el vaso
+            fill(0, 0, 255, 150); // Color del agua en el vaso
+            rect(cup.x - cup.w / 2, cup.y + cup.h / 2 - waterLevel, cup.w, waterLevel, 10);
+        }
+
+        class Bottle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.w = 100;
+                this.h = 300;
+            }
+            
+            display() {
+                // Dibujar la botella
+                fill(100, 100, 250, 150);
+                rect(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h, 20);
+                // Dibujar las capas
+                let layers = [
+                    { color: [139, 69, 19], label: "Restos de hojas", height: 40 },
+                    { color: [210, 180, 140], label: "Arena", height: 40 },
+                    { color: [160, 82, 45], label: "Grava muy fina", height: 50 },
+                    { color: [139, 69, 19], label: "Grava cada\nvez más gruesa", height: 80 },
+                    { color: [205, 133, 63], label: "Cantos rodados", height: 90 }
+                ];
+                
+                let currentY = this.y - this.h / 2;
+                
+                for (let layer of layers) {
+                    fill(layer.color);
+                    rect(this.x - this.w / 2, currentY, this.w, layer.height);
+                    fill(0);
+                    textSize(min(layer.height / 4, 12)); // Ajustar el tamaño del texto
+                    textAlign(CENTER, CENTER);
+                    text(layer.label, this.x, currentY + layer.height / 2);
+                    currentY += layer.height;
+                }
+            }
+        }
+
+        class Cap {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.r = 30;
+            }
+            
+            display() {
+                fill(200, 150, 100);
+                ellipse(this.x, this.y, this.r, this.r / 2);
+            }
+        }
+
+        class Cup {
+            constructor(x, y, maxHeight) {
+                this.x = x;
+                this.y = y;
+                this.w = 120;
+                this.h = maxHeight;
+            }
+            
+            display() {
+                fill(200, 200, 200);
+                rect(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h, 10);
+            }
+        }
+
+        class Drop {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.speed = random(2, 5);
+            }
+            
+            update() {
+                this.y += this.speed;
+                // Reiniciar la posición si la gota sale de la pantalla
+                if (this.y > height) {
+                    this.y = random(-100, 0);
+                    this.x = random(width / 2 - 50, width / 2 + 50);
+                }
+            }
+            
+            display() {
+                fill(0, 0, 255, 150);
+                noStroke();
+                ellipse(this.x, this.y, 5, 10);
+            }
+        }
+    </script>
+</body>
+</html>
